@@ -1,43 +1,33 @@
 package com.github.jjobes.slidedatetimepicker;
 
 import android.app.Fragment;
-import android.content.Context;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.format.DateFormat;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
-import android.widget.NumberPicker;
-import android.widget.NumberPicker.OnValueChangeListener;
 import android.widget.TimePicker;
 
 /**
  * The fragment for the second page in the ViewPager that holds
- * the TimePicker.
+ * the {@link TimePicker}.
  *
  * @author jjobes
- *
  */
-public class TimeFragment extends Fragment
-{
+public class TimeFragment extends Fragment {
     /**
      * Used to communicate back to the parent fragment as the user
      * is changing the time spinners so we can dynamically update
      * the tab text.
      */
-    public interface TimeChangedListener
-    {
+    public interface TimeChangedListener {
         void onTimeChanged(int hour, int minute);
     }
 
     private TimeChangedListener mCallback;
-    private TimePicker mTimePicker;
 
-    public TimeFragment()
-    {
+    public TimeFragment() {
         // Required empty public constructor for fragment.
     }
 
@@ -46,40 +36,31 @@ public class TimeFragment extends Fragment
      * {@link TimeChangedListener}.
      */
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try
-        {
+        try {
             mCallback = (TimeChangedListener) getTargetFragment();
-        }
-        catch (ClassCastException e)
-        {
-            throw new ClassCastException("Calling fragment must implement " +
-                "TimeFragment.TimeChangedListener interface");
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Calling fragment must implement TimeFragment.TimeChangedListener interface");
         }
     }
 
     /**
      * Return an instance of TimeFragment with its bundle filled with the
      * constructor arguments. The values in the bundle are retrieved in
-     * {@link #onCreateView()} below to properly initialize the TimePicker.
+     * {@link #onCreateView} below to properly initialize the TimePicker.
      *
-     * @param theme
      * @param hour
      * @param minute
      * @param isClientSpecified24HourTime
      * @param is24HourTime
      * @return
      */
-    public static final TimeFragment newInstance(int theme, int hour, int minute,
-        boolean isClientSpecified24HourTime, boolean is24HourTime)
-    {
-        TimeFragment f = new TimeFragment();
+    public static final TimeFragment newInstance(int hour, int minute, boolean isClientSpecified24HourTime, boolean is24HourTime) {
+        final TimeFragment f = new TimeFragment();
 
-        Bundle b = new Bundle();
-        b.putInt("theme", theme);
+        final Bundle b = new Bundle();
         b.putInt("hour", hour);
         b.putInt("minute", minute);
         b.putBoolean("isClientSpecified24HourTime", isClientSpecified24HourTime);
@@ -93,94 +74,39 @@ public class TimeFragment extends Fragment
      * Create and return the user interface view for this fragment.
      */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState)
-    {
-        int theme = getArguments().getInt("theme");
-        int initialHour = getArguments().getInt("hour");
-        int initialMinute = getArguments().getInt("minute");
-        boolean isClientSpecified24HourTime = getArguments().getBoolean("isClientSpecified24HourTime");
-        boolean is24HourTime = getArguments().getBoolean("is24HourTime");
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final int initialHour = getArguments().getInt("hour");
+        final int initialMinute = getArguments().getInt("minute");
+        final boolean isClientSpecified24HourTime = getArguments().getBoolean("isClientSpecified24HourTime");
+        final boolean is24HourTime = getArguments().getBoolean("is24HourTime");
 
         final View v = inflater.inflate(R.layout.fragment_time, container, false);
 
-        mTimePicker = (TimePicker) v.findViewById(R.id.timePicker);
+        final TimePicker timePicker = (TimePicker) v.findViewById(R.id.timePicker);
         // block keyboard popping up on touch
-        mTimePicker.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
-        mTimePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
+        timePicker.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
+        timePicker.setOnTimeChangedListener(new TimePicker.OnTimeChangedListener() {
 
             @Override
-            public void onTimeChanged(TimePicker view, int hourOfDay, int minute)
-            {
+            public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
                 mCallback.onTimeChanged(hourOfDay, minute);
             }
         });
 
         // If the client specifies a 24-hour time format, set it on
         // the TimePicker.
-        if (isClientSpecified24HourTime)
-        {
-            mTimePicker.setIs24HourView(is24HourTime);
-        }
-        else
-        {
+        if (isClientSpecified24HourTime) {
+            timePicker.setIs24HourView(is24HourTime);
+        } else {
             // If the client does not specify a 24-hour time format, use the
             // device default.
-            mTimePicker.setIs24HourView(DateFormat.is24HourFormat(
-                getTargetFragment().getActivity()));
+            timePicker.setIs24HourView(DateFormat.is24HourFormat(
+                    getTargetFragment().getActivity()));
         }
 
-        mTimePicker.setCurrentHour(initialHour);
-        mTimePicker.setCurrentMinute(initialMinute);
-
-        // Fix for the bug where a TimePicker's onTimeChanged() is not called when
-        // the user toggles the AM/PM button. Only applies to 4.0.0 and 4.0.3.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH &&
-            Build.VERSION.SDK_INT <= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-        {
-            fixTimePickerBug18982();
-        }
+        timePicker.setCurrentHour(initialHour);
+        timePicker.setCurrentMinute(initialMinute);
 
         return v;
-    }
-
-    /**
-     * Workaround for bug in Android TimePicker where the onTimeChanged() callback
-     * is not invoked when the user toggles between AM/PM. But we need to be able
-     * to detect this in order to dynamically update the tab title properly when
-     * the user toggles between AM/PM.
-     *
-     * Registered as Issue 18982:
-     *
-     * https://code.google.com/p/android/issues/detail?id=18982
-     */
-    private void fixTimePickerBug18982()
-    {
-        View amPmView = ((ViewGroup) mTimePicker.getChildAt(0)).getChildAt(3);
-
-        if (amPmView instanceof NumberPicker)
-        {
-            ((NumberPicker) amPmView).setOnValueChangedListener(new OnValueChangeListener() {
-
-                @Override
-                public void onValueChange(NumberPicker picker, int oldVal, int newVal)
-                {
-                    if (picker.getValue() == 1)  // PM
-                    {
-                        if (mTimePicker.getCurrentHour() < 12)
-                            mTimePicker.setCurrentHour(mTimePicker.getCurrentHour() + 12);
-                    }
-                    else  // AM
-                    {
-                        if (mTimePicker.getCurrentHour() >= 12)
-                            mTimePicker.setCurrentHour(mTimePicker.getCurrentHour() - 12);
-                    }
-
-                    mCallback.onTimeChanged(
-                        mTimePicker.getCurrentHour(),
-                        mTimePicker.getCurrentMinute());
-                }
-            });
-        }
     }
 }

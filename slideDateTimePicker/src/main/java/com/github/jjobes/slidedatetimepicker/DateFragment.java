@@ -1,9 +1,7 @@
 package com.github.jjobes.slidedatetimepicker;
 
 import android.app.Fragment;
-import android.content.Context;
 import android.os.Bundle;
-import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,28 +12,23 @@ import java.util.Date;
 
 /**
  * The fragment for the first page in the ViewPager that holds
- * the {@link CustomDatePicker}.
+ * the {@link DatePicker}.
  *
  * @author jjobes
- *
  */
-public class DateFragment extends Fragment
-{
+public class DateFragment extends Fragment {
     /**
      * Used to communicate back to the parent fragment as the user
      * is changing the date spinners so we can dynamically update
      * the tab text.
      */
-    public interface DateChangedListener
-    {
+    public interface DateChangedListener {
         void onDateChanged(int year, int month, int day);
     }
 
     private DateChangedListener mCallback;
-    private DatePicker mDatePicker;
 
-    public DateFragment()
-    {
+    public DateFragment() {
         // Required empty public constructor for fragment.
     }
 
@@ -44,27 +37,21 @@ public class DateFragment extends Fragment
      * to a {@link DateChangedListener}.
      */
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try
-        {
+        try {
             mCallback = (DateChangedListener) getTargetFragment();
-        }
-        catch (ClassCastException e)
-        {
-            throw new ClassCastException("Calling fragment must implement " +
-                "DateFragment.DateChangedListener interface");
+        } catch (ClassCastException e) {
+            throw new ClassCastException("Calling fragment must implement DateFragment.DateChangedListener interface");
         }
     }
 
     /**
      * Return an instance of DateFragment with its bundle filled with the
      * constructor arguments. The values in the bundle are retrieved in
-     * {@link #onCreateView()} below to properly initialize the DatePicker.
+     * {@link #onCreateView} below to properly initialize the DatePicker.
      *
-     * @param theme
      * @param year
      * @param month
      * @param day
@@ -72,13 +59,10 @@ public class DateFragment extends Fragment
      * @param maxDate
      * @return an instance of DateFragment
      */
-    public static final DateFragment newInstance(int theme, int year, int month,
-            int day, Date minDate, Date maxDate)
-    {
-        DateFragment f = new DateFragment();
+    public static final DateFragment newInstance(int year, int month, int day, Date minDate, Date maxDate) {
+        final DateFragment f = new DateFragment();
 
-        Bundle b = new Bundle();
-        b.putInt("theme", theme);
+        final Bundle b = new Bundle();
         b.putInt("year", year);
         b.putInt("month", month);
         b.putInt("day", day);
@@ -93,39 +77,35 @@ public class DateFragment extends Fragment
      * Create and return the user interface view for this fragment.
      */
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState)
-    {
-        int theme = getArguments().getInt("theme");
-        int initialYear = getArguments().getInt("year");
-        int initialMonth = getArguments().getInt("month");
-        int initialDay = getArguments().getInt("day");
-        Date minDate = (Date) getArguments().getSerializable("minDate");
-        Date maxDate = (Date) getArguments().getSerializable("maxDate");
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        final int initialYear = getArguments().getInt("year");
+        final int initialMonth = getArguments().getInt("month");
+        final int initialDay = getArguments().getInt("day");
+        final Date minDate = (Date) getArguments().getSerializable("minDate");
+        final Date maxDate = (Date) getArguments().getSerializable("maxDate");
 
-        View v = inflater.inflate(R.layout.fragment_date, container, false);
+        final View v = inflater.inflate(R.layout.fragment_date, container, false);
 
-        mDatePicker = (DatePicker) v.findViewById(R.id.datePicker);
+        final DatePicker picker = (DatePicker) v.findViewById(R.id.datePicker);
         // block keyboard popping up on touch
-        mDatePicker.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
-        mDatePicker.init(
-            initialYear,
-            initialMonth,
-            initialDay,
-            new OnDateChangedListener() {
-                @Override
-                public void onDateChanged(DatePicker view, int year,
-                        int monthOfYear, int dayOfMonth)
-                {
-                    mCallback.onDateChanged(year, monthOfYear, dayOfMonth);
-                }
-            });
+        picker.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
+        picker.init(
+                initialYear,
+                initialMonth,
+                initialDay,
+                new OnDateChangedListener() {
+                    @Override
+                    public void onDateChanged(DatePicker view, int year,
+                                              int monthOfYear, int dayOfMonth) {
+                        mCallback.onDateChanged(year, monthOfYear, dayOfMonth);
+                    }
+                });
 
         if (minDate != null)
-            mDatePicker.setMinDate(minDate.getTime());
+            picker.setMinDate(minDate.getTime());
 
         if (maxDate != null)
-            mDatePicker.setMaxDate(maxDate.getTime());
+            picker.setMaxDate(maxDate.getTime());
 
         return v;
     }

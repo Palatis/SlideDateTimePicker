@@ -15,31 +15,25 @@ import android.widget.TimePicker;
  * or the date or time picker depending on the direction of the swipe.
  *
  * @author jjobes
- *
  */
-public class CustomViewPager extends ViewPager
-{
+public class CustomViewPager extends ViewPager {
     private DatePicker mDatePicker;
     private TimePicker mTimePicker;
-    private float x1, y1, x2, y2;
+    private float x1;
+    private float y1;
     private float mTouchSlop;
 
-    public CustomViewPager(Context context)
-    {
+    public CustomViewPager(Context context) {
         super(context);
-
         init(context);
     }
 
-    public CustomViewPager(Context context, AttributeSet attrs)
-    {
+    public CustomViewPager(Context context, AttributeSet attrs) {
         super(context, attrs);
-
         init(context);
     }
 
-    private void init(Context context)
-    {
+    private void init(Context context) {
         mTouchSlop = ViewConfiguration.get(context).getScaledPagingTouchSlop();
     }
 
@@ -48,16 +42,14 @@ public class CustomViewPager extends ViewPager
      * doesn't seem to be recognized and the ViewPager will fill the
      * height of the screen regardless. We'll force the ViewPager to
      * have the same height as its immediate child.
-     *
+     * <p>
      * Thanks to alexrainman for the bugfix!
      */
     @Override
-    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec)
-    {
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int height = 0;
 
-        for (int i = 0; i < getChildCount(); i++)
-        {
+        for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             child.measure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
             int h = child.getMeasuredHeight();
@@ -82,53 +74,40 @@ public class CustomViewPager extends ViewPager
      * @param event
      */
     @Override
-    public boolean dispatchTouchEvent(MotionEvent event)
-    {
-        switch (event.getAction())
-        {
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 x1 = event.getX();
                 y1 = event.getY();
-
                 break;
+            case MotionEvent.ACTION_MOVE:
+                float x2 = event.getX();
+                float y2 = event.getY();
+                if (isScrollingHorizontal(x1, y1, x2, y2)) {
+                    // When the user is scrolling the ViewPager horizontally,
+                    // block the pickers from scrolling vertically.
+                    return super.dispatchTouchEvent(event);
+                }
+                break;
+        }
 
-           case MotionEvent.ACTION_MOVE:
-               x2 = event.getX();
-               y2 = event.getY();
+        // As long as the ViewPager isn't scrolling horizontally,
+        // dispatch the event to the DatePicker or TimePicker,
+        // depending on which page the ViewPager is currently on.
 
-               if (isScrollingHorizontal(x1, y1, x2, y2))
-               {
-                   // When the user is scrolling the ViewPager horizontally,
-                   // block the pickers from scrolling vertically.
-                   return super.dispatchTouchEvent(event);
-               }
+        switch (getCurrentItem()) {
+            case 0:
+                if (mDatePicker != null)
+                    mDatePicker.dispatchTouchEvent(event);
+                break;
+            case 1:
+                if (mTimePicker != null)
+                    mTimePicker.dispatchTouchEvent(event);
+                break;
+        }
 
-               break;
-         }
-
-         // As long as the ViewPager isn't scrolling horizontally,
-         // dispatch the event to the DatePicker or TimePicker,
-         // depending on which page the ViewPager is currently on.
-
-         switch (getCurrentItem())
-         {
-         case 0:
-
-             if (mDatePicker != null)
-                 mDatePicker.dispatchTouchEvent(event);
-
-             break;
-
-         case 1:
-
-             if (mTimePicker != null)
-                 mTimePicker.dispatchTouchEvent(event);
-
-             break;
-         }
-
-         // need this for the ViewPager to scroll horizontally at all
-         return super.onTouchEvent(event);
+        // need this for the ViewPager to scroll horizontally at all
+        return super.onTouchEvent(event);
     }
 
     /**
@@ -142,18 +121,9 @@ public class CustomViewPager extends ViewPager
      * @param y2
      * @return
      */
-    private boolean isScrollingHorizontal(float x1, float y1, float x2, float y2)
-    {
-        float deltaX = x2 - x1;
-        float deltaY = y2 - y1;
-
-        if (Math.abs(deltaX) > mTouchSlop &&
-            Math.abs(deltaX) > Math.abs(deltaY))
-        {
-
-            return true;
-        }
-
-        return false;
+    private boolean isScrollingHorizontal(float x1, float y1, float x2, float y2) {
+        final float deltaX = x2 - x1;
+        final float deltaY = y2 - y1;
+        return Math.abs(deltaX) > mTouchSlop && Math.abs(deltaX) > Math.abs(deltaY);
     }
 }
