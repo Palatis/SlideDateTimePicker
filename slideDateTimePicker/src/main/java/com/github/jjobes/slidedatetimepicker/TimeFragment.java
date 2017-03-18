@@ -1,9 +1,9 @@
 package com.github.jjobes.slidedatetimepicker;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.text.format.DateFormat;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -102,21 +102,7 @@ public class TimeFragment extends Fragment
         boolean isClientSpecified24HourTime = getArguments().getBoolean("isClientSpecified24HourTime");
         boolean is24HourTime = getArguments().getBoolean("is24HourTime");
 
-        // Unless we inflate using a cloned inflater with a Holo theme,
-        // on Lollipop devices the TimePicker will be the new-style
-        // radial TimePicker, which is not what we want. So we will
-        // clone the inflater that we're given but with our specified
-        // theme, then inflate the layout with this new inflater.
-
-        Context contextThemeWrapper = new ContextThemeWrapper(
-                getActivity(),
-                theme == SlideDateTimePicker.HOLO_DARK ?
-                         android.R.style.Theme_Holo :
-                         android.R.style.Theme_Holo_Light);
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        View v = localInflater.inflate(R.layout.fragment_time, container, false);
+        final View v = inflater.inflate(R.layout.fragment_time, container, false);
 
         mTimePicker = (TimePicker) v.findViewById(R.id.timePicker);
         // block keyboard popping up on touch

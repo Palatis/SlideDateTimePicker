@@ -1,16 +1,16 @@
 package com.github.jjobes.slidedatetimepicker;
 
-import java.util.Date;
-
+import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
-import android.app.Fragment;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.DatePicker.OnDateChangedListener;
+
+import java.util.Date;
 
 /**
  * The fragment for the first page in the ViewPager that holds
@@ -32,7 +32,7 @@ public class DateFragment extends Fragment
     }
 
     private DateChangedListener mCallback;
-    private CustomDatePicker mDatePicker;
+    private DatePicker mDatePicker;
 
     public DateFragment()
     {
@@ -103,23 +103,9 @@ public class DateFragment extends Fragment
         Date minDate = (Date) getArguments().getSerializable("minDate");
         Date maxDate = (Date) getArguments().getSerializable("maxDate");
 
-        // Unless we inflate using a cloned inflater with a Holo theme,
-        // on Lollipop devices the DatePicker will be the new-style
-        // DatePicker, which is not what we want. So we will
-        // clone the inflater that we're given but with our specified
-        // theme, then inflate the layout with this new inflater.
+        View v = inflater.inflate(R.layout.fragment_date, container, false);
 
-        Context contextThemeWrapper = new ContextThemeWrapper(
-                getActivity(),
-                theme == SlideDateTimePicker.HOLO_DARK ?
-                         android.R.style.Theme_Holo :
-                         android.R.style.Theme_Holo_Light);
-
-        LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
-
-        View v = localInflater.inflate(R.layout.fragment_date, container, false);
-
-        mDatePicker = (CustomDatePicker) v.findViewById(R.id.datePicker);
+        mDatePicker = (DatePicker) v.findViewById(R.id.datePicker);
         // block keyboard popping up on touch
         mDatePicker.setDescendantFocusability(DatePicker.FOCUS_BLOCK_DESCENDANTS);
         mDatePicker.init(
@@ -127,7 +113,6 @@ public class DateFragment extends Fragment
             initialMonth,
             initialDay,
             new OnDateChangedListener() {
-
                 @Override
                 public void onDateChanged(DatePicker view, int year,
                         int monthOfYear, int dayOfMonth)
